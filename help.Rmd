@@ -1,0 +1,32 @@
+---
+title: "help"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+League <- read.csv('kar4355_data.csv')
+League %>% glimpse()
+League <- League %>% mutate(y = ifelse(Win.Loss=="WIN",1,0))
+my_glm <- lm(y ~ Kills + CS.Min, data=League)
+summary(my_glm)
+
+resids1 <- lm(Kills~CS.Min, data=League)$residuals
+ggplot()+geom_histogram(aes(resids1),bins=50)
+
+fitted1 <- lm(Kills~CS.Min, data=League)$fitted.values
+ggplot()+geom_point(aes(fitted1,resids1))
+
+```
+
