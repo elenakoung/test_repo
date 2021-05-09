@@ -1,0 +1,26 @@
+---
+title: Python stuff
+author: 'Elena Koung'
+date: '2021-05-08'
+slug: python-stuff
+categories: []
+tags: []
+description: 'here I demonstrate basic Python knowledge'
+---
+
+
+
+<pre class="r"><code>library(reticulate)
+rtalk &lt;- &quot;this is R :)&quot;</code></pre>
+<pre class="python"><code>ptalk = &quot;this is Python &gt;:)&quot;
+print(r.rtalk,ptalk)</code></pre>
+<pre><code>## this is R :) this is Python &gt;:)</code></pre>
+<p>And this shows that R does the same thing, so the message is the same.</p>
+<pre class="r"><code>cat(c(rtalk,py$ptalk))</code></pre>
+<pre><code>## this is R :) this is Python &gt;:)</code></pre>
+<pre class="python"><code>
+for i in range(3):
+  print(&quot;I love stats!!&quot;)</code></pre>
+<pre><code>## I love stats!!
+## I love stats!!
+## I love stats!!</code></pre>
