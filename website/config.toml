@@ -1,0 +1,47 @@
+baseurl = "/"
+languageCode = "en-US"
+title = "Elena Koung"
+# Enable comments by entering your Disqus shortname
+disqusShortname = ""
+# Enable Google Analytics by entering your tracking code
+googleAnalytics = ""
+theme = "hugo-sustain"
+
+[permalinks]
+  post = "/post/:year/:month/:day/:slug"
+
+[params]
+  avatar = "profile.jpg"
+  author = "Elena Koung"
+  occupation = "Student"
+  about = "I am a junior at the University of Texas at Austin majoring in math with a focus in statistics. I am part of the Polymathic Scholars Honors program. "
+
+  # Custom assets can be linked with their paths relative to static/
+  custom_css = []
+  custom_js  = []
+
+[params.social]
+  Github        = "elenakoung"
+  Email         = "elenakoung@utexas.edu"
+  LinkedIn      = "elenakoung"
+  Instagram     = "elenakoung"
+#  Stackoverflow = "username"
+#  Medium        = "username"
+#  Telegram      = "username"
+
+## Main Menu
+[[menu.main]]
+  name = "blog"
+  weight = 100
+  identifier = "blog"
+  url = "/post/"
+[[menu.main]]
+  name = "projects"
+  identifier = "projects"
+  weight = 200
+  url = "/projects/"
+[[menu.main]]
+  name = "resume"
+  identifier = "resume"
+  weight = 300
+  url = "/resume/"

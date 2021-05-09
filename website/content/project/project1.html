@@ -1,0 +1,215 @@
+---
+title: "Project 1"
+author: "Elena Koung ek8753"
+date: "2021-05-08"
+---
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>I chose to examine my Spotify listening data by combining my music streaming history. I acquired this data easily by requesting it through Spotify and waiting a few days and it was emailed to me in a .zip folder.
+My two datasets (StreamingHistory0 and StreamingHistory1) are identical in structure and the variables I see are endTime, artistName, trackName, and msPlayed. While this is just 4 variables, I can split endTime into year, month, day, and time (hour and minute) to examine more numerical variables to fit the rubric. The common variable is probably going to be artistName and the numerical (at least 3) variacles will be year, month, day, time, and msPlayed. I also think I want to change msPlayed into seconds and minutes because it is easier to understand/think about.</p>
+</div>
+<div id="detail-of-variables" class="section level2">
+<h2>Detail of Variables</h2>
+<pre class="yaml"><code>A list of items (songs, videos, and podcasts) listened to or watched in the past year:
+
+endTime: Date and time of when the stream ended in UTC format.
+artistName: Name of creator for each stream (the artist name if a music track).
+trackName: Name of items listened to/watched (title of music track/name of video). 
+msPlayed: Stands for how many mili-seconds the track was listened. 
+</code></pre>
+</div>
+<div id="interest" class="section level2">
+<h2>Interest</h2>
+<p>I am interested in my Spotify data because I use Spotify as my #1 music streaming service and used it almost every week when I play video games. I want to see what weeks I spent a lot of time listening to music, especially since COVID started, I feel like I listen to music less since I don’t get my walk-to-class music anymore. I also listen to music less when I have depression, so there may be periods of time I don’t listen to music at all. I definitely gravitate towards some playlists depending on moods so seeing what the top artist of every day would be a cool thing to analyze.</p>
+<p>It is also cool because I get to listen along with friends through the app and wonder if it counts into my own streaming history as well. I am interested to see how the data I wrangle compares to my Spotify wrapped and see if there are the same conclusions!</p>
+<pre class="yaml"><code>Some potential associations that I expect to see are:
+Alan Walker or Taylor Swift as a most frequently listened to artist
+Results match my Spotify Wrapped data so there shouldn&#39;t be any surprises 
+</code></pre>
+<p>I can’t really tell what my most played song would be, but definitely from one of those two artists above.</p>
+</div>
+<div id="loading-json" class="section level2">
+<h2>Loading json</h2>
+<pre class="r"><code>library(&quot;rjson&quot;)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.3     ✓ purrr   0.3.4
+## ✓ tibble  3.0.4     ✓ dplyr   1.0.3
+## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+## ✓ readr   1.4.0     ✓ forcats 0.5.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(cluster)
+
+list1 = rjson::fromJSON(file = &quot;StreamingHistory0.json&quot;)
+list2 = rjson::fromJSON(file = &quot;StreamingHistory1.json&quot;)
+list1 &lt;- do.call(rbind, lapply(list1, data.frame))
+list2 &lt;- do.call(rbind, lapply(list2, data.frame))</code></pre>
+</div>
+<div id="tidy-it" class="section level2">
+<h2>Tidy it!</h2>
+<pre class="r"><code>streaming &lt;- full_join(list1, list2) %&gt;% glimpse</code></pre>
+<pre><code>## Joining, by = c(&quot;endTime&quot;, &quot;artistName&quot;, &quot;trackName&quot;, &quot;msPlayed&quot;)</code></pre>
+<pre><code>## Rows: 12,846
+## Columns: 4
+## $ endTime    &lt;fct&gt; 2019-12-24 02:53, 2020-03-01 07:59, 2020-03-10 23:03, 2020…
+## $ artistName &lt;fct&gt; Fall Out Boy, Elephante, Slushii, Slushii, K-391, Seven Li…
+## $ trackName  &lt;fct&gt; My Songs Know What You Did In The Dark (Light Em Up), Othe…
+## $ msPlayed   &lt;dbl&gt; 58189, 60020, 30607, 8020, 187560, 211200, 189466, 149903,…</code></pre>
+<p>The datasets are already tidy.</p>
+</div>
+<div id="joining" class="section level2">
+<h2>Joining!</h2>
+<pre class="r"><code>streaming &lt;- full_join(list1, list2) </code></pre>
+<pre><code>## Joining, by = c(&quot;endTime&quot;, &quot;artistName&quot;, &quot;trackName&quot;, &quot;msPlayed&quot;)</code></pre>
+<pre class="r"><code>streaming2 &lt;- streaming %&gt;% separate(endTime, sep=&quot;-&quot;, into=c(&quot;year&quot;, &quot;monthNum&quot;,&quot;dayTime&quot;)) %&gt;%
+    mutate(new = str_replace_all(dayTime, &quot; &quot;, &quot;_&quot;)) %&gt;% separate(new, sep=&quot;_&quot;, into=c(&quot;day&quot;, &quot;time&quot;)) %&gt;% mutate(month = recode(monthNum, &quot;01&quot;=&quot;Jan&quot;,&quot;02&quot;=&quot;Feb&quot;,&quot;03&quot;=&quot;Mar&quot;,&quot;04&quot;=&quot;Apr&quot;,&quot;05&quot;=&quot;May&quot;,&quot;06&quot;=&quot;Jun&quot;, &quot;07&quot;=&quot;Jul&quot;,&quot;08&quot;=&quot;Aug&quot;,&quot;09&quot;=&quot;Sep&quot;,&quot;10&quot;=&quot;Oct&quot;,&quot;11&quot;=&quot;Nov&quot;,&quot;12&quot;=&quot;Dec&quot;))
+streaming2 %&gt;% glimpse()</code></pre>
+<pre><code>## Rows: 12,846
+## Columns: 9
+## $ year       &lt;chr&gt; &quot;2019&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2…
+## $ monthNum   &lt;chr&gt; &quot;12&quot;, &quot;03&quot;, &quot;03&quot;, &quot;03&quot;, &quot;03&quot;, &quot;03&quot;, &quot;03&quot;, &quot;03&quot;, &quot;03&quot;, &quot;03&quot;…
+## $ dayTime    &lt;chr&gt; &quot;24 02:53&quot;, &quot;01 07:59&quot;, &quot;10 23:03&quot;, &quot;11 17:48&quot;, &quot;11 17:51&quot;…
+## $ artistName &lt;fct&gt; Fall Out Boy, Elephante, Slushii, Slushii, K-391, Seven Li…
+## $ trackName  &lt;fct&gt; My Songs Know What You Did In The Dark (Light Em Up), Othe…
+## $ msPlayed   &lt;dbl&gt; 58189, 60020, 30607, 8020, 187560, 211200, 189466, 149903,…
+## $ day        &lt;chr&gt; &quot;24&quot;, &quot;01&quot;, &quot;10&quot;, &quot;11&quot;, &quot;11&quot;, &quot;11&quot;, &quot;11&quot;, &quot;11&quot;, &quot;11&quot;, &quot;11&quot;…
+## $ time       &lt;chr&gt; &quot;02:53&quot;, &quot;07:59&quot;, &quot;23:03&quot;, &quot;17:48&quot;, &quot;17:51&quot;, &quot;17:55&quot;, &quot;17:…
+## $ month      &lt;chr&gt; &quot;Dec&quot;, &quot;Mar&quot;, &quot;Mar&quot;, &quot;Mar&quot;, &quot;Mar&quot;, &quot;Mar&quot;, &quot;Mar&quot;, &quot;Mar&quot;, &quot;M…</code></pre>
+<p>First I used <code>full_join</code> to combine the datasets. The datasets are identical in structure and I wanted to preserve all observations, so this function made the most sense to do. In the original datasets, <code>list1</code> and <code>list2</code>, they had 10000 rows and 4 columns and 2846 rows and 4 columns, respectively. Thus, it was expected that after the <code>full_join</code> that we would see a dataset with 12486 rows and 4 columns.</p>
+<p>I wanted to have more then 3 numerical variables. The original variable <code>endTime</code> was split using <code>separate()</code> into <code>year</code>, <code>monthNum</code>, and <code>dayTime</code>. Since <code>dayTime</code> was formatted with a space, I used <code>mutate()</code> to change the space with an underscore so it was able to separate based on the underscore into new columns- <code>day</code> and <code>time</code>. Then since month is a character value and not numerical, I used recode to rename all of the numbered months into their month abbreviations.</p>
+</div>
+<div id="wrangling" class="section level2">
+<h2>Wrangling!</h2>
+<pre class="r"><code>streaming3 &lt;- streaming2 %&gt;% mutate(sPlayed = msPlayed / 1000) %&gt;% mutate(minPlayed = sPlayed / 60)
+streaming3 %&gt;% arrange(desc(minPlayed)) %&gt;% glimpse()</code></pre>
+<pre><code>## Rows: 12,846
+## Columns: 11
+## $ year       &lt;chr&gt; &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2020&quot;, &quot;2…
+## $ monthNum   &lt;chr&gt; &quot;09&quot;, &quot;10&quot;, &quot;09&quot;, &quot;08&quot;, &quot;12&quot;, &quot;10&quot;, &quot;08&quot;, &quot;12&quot;, &quot;08&quot;, &quot;06&quot;…
+## $ dayTime    &lt;chr&gt; &quot;25 14:36&quot;, &quot;02 09:12&quot;, &quot;25 16:28&quot;, &quot;20 16:56&quot;, &quot;18 09:04&quot;…
+## $ artistName &lt;fct&gt; Erik Eriksson, Erik Eriksson, Erik Eriksson, Love Intently…
+## $ trackName  &lt;fct&gt; &quot;White Noise 3 Hour Long&quot;, &quot;White Noise 3 Hour Long&quot;, &quot;Whi…
+## $ msPlayed   &lt;dbl&gt; 10828190, 10828190, 6734125, 3377753, 2633261, 2450541, 24…
+## $ day        &lt;chr&gt; &quot;25&quot;, &quot;02&quot;, &quot;25&quot;, &quot;20&quot;, &quot;18&quot;, &quot;02&quot;, &quot;20&quot;, &quot;18&quot;, &quot;21&quot;, &quot;26&quot;…
+## $ time       &lt;chr&gt; &quot;14:36&quot;, &quot;09:12&quot;, &quot;16:28&quot;, &quot;16:56&quot;, &quot;09:04&quot;, &quot;09:53&quot;, &quot;17:…
+## $ month      &lt;chr&gt; &quot;Sep&quot;, &quot;Oct&quot;, &quot;Sep&quot;, &quot;Aug&quot;, &quot;Dec&quot;, &quot;Oct&quot;, &quot;Aug&quot;, &quot;Dec&quot;, &quot;A…
+## $ sPlayed    &lt;dbl&gt; 10828.190, 10828.190, 6734.125, 3377.753, 2633.261, 2450.5…
+## $ minPlayed  &lt;dbl&gt; 180.469833, 180.469833, 112.235417, 56.295883, 43.887683, …</code></pre>
+<pre class="r"><code>streaming3 %&gt;% group_by(trackName,minPlayed) %&gt;% filter(n()&gt;1) %&gt;% summarize(count=n()) %&gt;% arrange(desc(count)) %&gt;% glimpse()</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;trackName&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>## Rows: 1,312
+## Columns: 3
+## Groups: trackName [1,281]
+## $ trackName &lt;fct&gt; Let&#39;s Fall in Love for the Night, Made Me This Way, happine…
+## $ minPlayed &lt;dbl&gt; 3.172467, 2.815050, 5.252433, 4.090417, 4.066667, 3.358967,…
+## $ count     &lt;int&gt; 40, 36, 36, 35, 35, 33, 31, 29, 29, 27, 27, 26, 26, 25, 24,…</code></pre>
+<pre class="r"><code>#streaming3 %&gt;% select(artistName, trackName, minPlayed) %&gt;% group_by(artistName, trackName) %&gt;% summarize_if(is.numeric, list(mean=mean, sd=sd, min=min, max=max))</code></pre>
+<p>I used <code>mutate</code> to change <code>msPlayed</code> (in milliseconds) to different units: seconds and minutes. So all I did was divide <code>msPlayed</code>by 1000 to get <code>sPlayed</code> (in seconds) and divide <code>sPlayed</code> by 60 to get <code>minPlayed</code> (in minutes).</p>
+<p>I wanted to see what the longest song I listened to was, so I used <code>arrange()</code> to order <code>minPlayed</code> in descending order to reveal the longest song. It turns out to be 3 hour White Noise! This is not what I expected because I forgot that streaming history includes podcasts as well as these sleep “songs”.</p>
+<p>When I use <code>group_by()</code> on <code>trackName</code> and <code>minPlayed</code> to get each song grouped by how long it was played. This let me see that there are times I skipped the same song while also listening to it a certain amount of time. Basically, while I could count the total amount of times I’ve listened each song through counting each appearance, I am more interested in how many full plays of a song I went through.</p>
+<p>So, looking at <code>minPlayed</code>, I see that there are a few times I will skip a song before it is fully played through (probably because I was on shuffle and just wasn’t vibing to a particular song). I don’t want this to count to my total number of streams. Thus, I used <code>filter()</code> with count greater than 1 as my argument, to remove any instances of “skipping” the song. While <code>minPlayed</code> is not a categorical variable, it acts as one when I group by it to check if “yes/no” the song has been played fully.</p>
+<p>Then I use <code>summarize()</code> with <code>n()</code> as the argument, I get a list of songs and how many times they were played FULLY. I <code>arrange()</code> by descending order to see which song I’ve played the most. For my most listened song, I see that I have listened to “Let’s Fall in Love for the Night” 40 times in the past year! I am surprised because this isn’t one of my favorite songs, but also looks like I never really skip it either!</p>
+</div>
+<div id="tidying-summarized-data" class="section level2">
+<h2>Tidying summarized data</h2>
+<pre class="r"><code>streaming4 &lt;- streaming3 %&gt;% group_by(trackName) %&gt;% summarize_if(is.numeric, list(mean=mean, sd=sd, min=min, max=max))
+streaming5 &lt;- streaming4 %&gt;% pivot_longer(contains(&quot;_&quot;)) %&gt;% separate(name, sep=&quot;_&quot;, into=c(&quot;1&quot;, &quot;Stat&quot;)) %&gt;% pivot_wider(names_from=&quot;1&quot;, values_from=&quot;value&quot;) %&gt;% arrange(desc(minPlayed)) %&gt;% glimpse()</code></pre>
+<pre><code>## Rows: 15,940
+## Columns: 5
+## $ trackName &lt;fct&gt; &quot;White Noise 3 Hour Long&quot;, &quot;White Noise 3 Hour Long&quot;, &quot;Whit…
+## $ Stat      &lt;chr&gt; &quot;max&quot;, &quot;mean&quot;, &quot;mean&quot;, &quot;min&quot;, &quot;max&quot;, &quot;sd&quot;, &quot;mean&quot;, &quot;min&quot;, &quot;…
+## $ msPlayed  &lt;dbl&gt; 10828190, 8035640, 6734125, 6734125, 6734125, 4836838, 3377…
+## $ sPlayed   &lt;dbl&gt; 10828.190, 8035.640, 6734.125, 6734.125, 6734.125, 4836.838…
+## $ minPlayed &lt;dbl&gt; 180.46983, 133.92734, 112.23542, 112.23542, 112.23542, 80.6…</code></pre>
+<p>Since I used <code>n()</code> earlier in <code>summarize()</code>, I chose to look at 4 other functions inside this function. I was able to look at all the songs I streamed and summarize their mean, standard deviation, min, max through <code>summarize_if</code>. First, I <code>pivot_longer</code> to look at all of the data that resulted from the summarize, so it has a <code>name</code> and <code>value</code> associated with each statistic. Then I used <code>separate()</code> to split the quantifier (ms, s, minPlayed) from the type of statistic (mean, sd, min, max). After that I used <code>pivot_wider</code> to change the row labels into column labels and matched the associated values to each quantifier and statistic. Then I arranged in descending order to look at the maximum amount of time I spent streaming: “White Noise 3 Hour Long” for 180.469833! The whole duration! I guess I fell asleep to that.</p>
+</div>
+<div id="changing-to-numeric" class="section level2">
+<h2>Changing to numeric</h2>
+<pre class="r"><code>data_num &lt;- as.data.frame(apply(streaming2, 2, as.numeric)) </code></pre>
+<pre><code>## Warning in apply(streaming2, 2, as.numeric): NAs introduced by coercion
+
+## Warning in apply(streaming2, 2, as.numeric): NAs introduced by coercion
+
+## Warning in apply(streaming2, 2, as.numeric): NAs introduced by coercion
+
+## Warning in apply(streaming2, 2, as.numeric): NAs introduced by coercion
+
+## Warning in apply(streaming2, 2, as.numeric): NAs introduced by coercion</code></pre>
+<pre class="r"><code>sapply(data_num, class) </code></pre>
+<pre><code>##       year   monthNum    dayTime artistName  trackName   msPlayed        day 
+##  &quot;numeric&quot;  &quot;numeric&quot;  &quot;numeric&quot;  &quot;numeric&quot;  &quot;numeric&quot;  &quot;numeric&quot;  &quot;numeric&quot; 
+##       time      month 
+##  &quot;numeric&quot;  &quot;numeric&quot;</code></pre>
+</div>
+<div id="visualizing-correlation" class="section level2">
+<h2>Visualizing Correlation</h2>
+<pre class="r"><code>cormat &lt;- data_num %&gt;% select(year,monthNum,day,msPlayed) %&gt;% cor(use=&quot;pair&quot;)
+tidycor &lt;- cormat %&gt;% as.data.frame %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% pivot_longer(-1,names_to=&quot;var2&quot;,values_to=&quot;correlation&quot;)
+
+tidycor %&gt;% ggplot(aes(var1,var2,fill=correlation)) + geom_tile() + scale_fill_gradient2(low=&quot;purple&quot;,mid=&quot;cyan&quot;,high=&quot;pink&quot;)+geom_text(aes(label=round(correlation,2)),color=&quot;black&quot;,size=5) + coord_fixed() + labs(title=&quot;Correlation of Date (day, month, year) and Time Played (ms)&quot;)</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-7-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>cormat2 &lt;- streaming4 %&gt;% select(minPlayed_mean,minPlayed_sd,minPlayed_min,minPlayed_max) %&gt;% cor(use=&quot;pair&quot;)
+tidycor &lt;- cormat2 %&gt;% as.data.frame %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% pivot_longer(-1,names_to=&quot;var2&quot;,values_to=&quot;correlation&quot;) 
+
+tidycor %&gt;% ggplot(aes(var1,var2,fill=correlation)) + geom_tile() + scale_fill_gradient2(low=&quot;white&quot;,mid=&quot;cyan&quot;,high=&quot;pink&quot;)+geom_text(aes(label=round(correlation,2)),color=&quot;black&quot;,size=5)+coord_fixed() + labs(title=&quot;Correlation of Statistics&quot;) + theme(axis.text.x=element_text(angle=90))</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-7-2.png" width="576" style="display: block; margin: auto;" />
+I made 2 correlation plots in ggplot. For “Correlation of Date (day, month, year) and Time Played (ms)”: I see that month is highly correlated to year, which makes sense. It also makes sense that there is no correlation between the date and how long I listen to a song for, because I enjoy music all the time and any time.
+For “Correlation of Statistics”: I see that everything is pretty highly correlated together with the exception of <code>minPlayed_max</code> and <code>minPlayed_sd</code>. It has a significantly different correlation value. It is interesting that <code>minPlayed_max</code> is most correlated with <code>minPlayed_mean</code>.</p>
+</div>
+<div id="visualizing-plots" class="section level2">
+<h2>Visualizing Plots</h2>
+<pre class="r"><code>streaming3 %&gt;% ggplot(aes(monthNum, color=factor(year))) + geom_bar(fill=&quot;pink&quot;) +labs(title=&quot;Number of Songs Played by Month&quot;, x=&quot;Month&quot;) + geom_text(aes(label = ..count..), stat = &quot;count&quot;, vjust = 1.7, color = &quot;purple&quot;, size=3.5) + scale_y_continuous(name=&quot;count&quot;, breaks=seq(0,3000,500))</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-8-1.png" width="576" style="display: block; margin: auto;" />
+In <code>factor(year)</code>, I wanted to see what year the data was from and how many counts are associated with each year. There is one observation from 2019 in December that does not show up in the data since the counts are so high (the y-max is 3000 so representing 1 count is impossible to see, therefore we see no “red” factor in the bar plot). It is interesting that I didn’t listen to <em>any</em> songs in January AND February of 2020. I can’t tell if this is an error or if I just completely neglected Spotify during that time in my life. My Spotify usage shot up in the months of November and December of 2020 and that was when I started playing a lot more video games and started sharing music with my friends!
+It’s possible was listening to downloaded music instead of streaming songs for January AND February which would account for the “error” of missing data for 2 months.</p>
+</div>
+<div id="clustering" class="section level2">
+<h2>Clustering</h2>
+<pre class="r"><code>clust_dat&lt;-streaming4 %&gt;% dplyr::select(minPlayed_max,minPlayed_mean)
+pam1 &lt;- clust_dat %&gt;% na.omit() %&gt;% pam(2)
+pamclust&lt;-clust_dat %&gt;% mutate(cluster=as.factor(pam1$clustering))
+pamclust %&gt;% ggplot(aes(minPlayed_max,minPlayed_mean,color=cluster)) + geom_point()</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-9-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>Need to remove outliers cus it looks funny and too hard to understand what is going on here.</p>
+<pre class="r"><code>clust_dat&lt;-streaming4 %&gt;% filter(minPlayed_mean &lt;20) %&gt;% dplyr::select(minPlayed_max,minPlayed_mean)
+pam2 &lt;- clust_dat %&gt;% na.omit() %&gt;% pam(2)
+pamclust&lt;-clust_dat %&gt;% mutate(cluster=as.factor(pam2$clustering))
+pamclust %&gt;% ggplot(aes(minPlayed_max,minPlayed_mean,color=cluster)) + geom_point()</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sil_width&lt;-vector()
+for(i in 2:10){
+  pam_fit &lt;- pam(clust_dat, k = i)
+  sil_width[i] &lt;- pam_fit$silinfo$avg.width
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name=&quot;k&quot;,breaks=1:10)</code></pre>
+<pre><code>## Warning: Removed 1 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-10-2.png" width="576" style="display: block; margin: auto;" />
+Outliers (the super long white noise sleep “song”) are removed. I see that in the sil width plot that the highest points are at 2 or 3 so I will choose 2 or 3 clusters. 2 looks to be the most promising for best sil width, so I will use 2 clusters.</p>
+<pre class="r"><code>clust_dat&lt;-streaming4 %&gt;% filter(minPlayed_mean &lt;4) %&gt;% dplyr::select(minPlayed_max,minPlayed_mean)
+pam3 &lt;- clust_dat %&gt;% na.omit() %&gt;% pam(2)
+pamclust&lt;-clust_dat %&gt;% mutate(cluster=as.factor(pam3$clustering))
+pamclust %&gt;% ggplot(aes(minPlayed_max,minPlayed_mean,color=cluster)) + geom_point()</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pam3$silinfo$avg.width</code></pre>
+<pre><code>## [1] 0.665955</code></pre>
+<p>With an average silhouette width of <code>0.665955</code>, the structure is a strongly moderate. I think that 2-3 clusters makes sense because there are clusters of songs played in 2020 and in 2021. Moreover, I can cluster a song’s play time into skipped songs (usually less than 2 minutes), songs played through (3-5 minutes), podcasts (10+ minutes) which is really interesting to see when I look at how well each number of cluster’s sil width tests goodness of fit.</p>
+<pre class="r"><code>streaming6 &lt;- streaming3 %&gt;% mutate_if(is.character, as.factor)
+gower1 &lt;- daisy(streaming6, metric=&quot;gower&quot;)
+pam4 &lt;- pam(gower1,k=3,diss=T)
+pamclustc &lt;- streaming6 %&gt;% mutate(cluster=as.factor(pam4$clustering))
+pamclustc %&gt;% ggplot(aes(day, minPlayed, color=cluster)) + geom_point()</code></pre>
+<p><img src="/project/project1_files/figure-html/unnamed-chunk-13-1.png" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pam4$silinfo$avg.width</code></pre>
+<pre><code>## [1] 0.1498925</code></pre>
+<p>When I used gower’s, it looks like the sil width is really really small: 0.1498925. This means that no substantial structure has been found.
+I think this makes sense because there isn’t supposed to be a trend in streamed songs and trying to understand the streaming history without knowledge of playlist clusters could be difficult. For future study, I’m thinking about adding my playlist data and possible grouping and clustering on that and that might give more interesting results.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>Overall, this project was really fun and interesting to work with since the data is unique to me and has a personal element to it. I think the most surprising thing was that my most played song is actually not by any of my favorite artists, but helped me discover something I didn’t really pay attention to before. I had a hard time with PAM since my data was little in characteristics but large in number. I would like to run my code on other people’s data (like my friend’s) to see if I could help them discover something new about themselves as well!</p>
+</div>

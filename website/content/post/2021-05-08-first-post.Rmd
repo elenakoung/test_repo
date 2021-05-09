@@ -1,0 +1,21 @@
+---
+title: First post
+author: 'Elena Koung'
+date: '2021-05-08'
+slug: first-post
+categories: []
+tags: []
+description: ''
+---
+hello this is kind of difficult to use but im sure it will be worth it
+[Link to project 1](/project/project1/)
+
+[Link to google](https://www.google.com)
+
+```{r cars}
+summary(cars)
+fit <- lm(dist ~ speed, data = cars)
+fit
+```
+
+![](/post/2021-05-08-first-post_files/TOFU3.png)
